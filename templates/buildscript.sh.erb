@@ -1,0 +1,12 @@
+#!/bin/bash
+#
+# Buildscript for CCW
+#
+
+buildkeylocation="<%= @builddirectory -%>/<%= @builduser -%>.key"
+buildhost="<%= @buildhost -%>"
+builduser="<%= @builduser -%>"
+
+rsync -avz -e "ssh -o StrictHostKeyChecking=no -i ${buildkeylocation}" ${builduser}@${buildhost}:/var/www/htdocs /var/www/htdocs
+rsync -avz -e "ssh -o StrictHostKeyChecking=no -i ${buildkeylocation}" ${builduser}@${buildhost}:/opt/dbdump /tmp/dbdump
+

@@ -25,7 +25,7 @@ class role_ccw (
   $repokeyname                = 'githubkey',
   $reposshauth                = true,
   $webdirs                    = ['/var/www/htdocs'],
-  $rwwebdirs                  = ['/var/www/htdocs/cache'],
+  $rwwebdirs                  = ['/var/www/htdocs/thumbnails','/var/www/htdocs/documents'],
   $configuredb                = true,
   $mysqlRootPassword          = 'rootpassword',
   $dbName                     = 'ccw',
@@ -51,8 +51,8 @@ class role_ccw (
     }->
     file { $rwwebdirs:
       ensure         => 'directory',
-      mode           => '0777',
-      owner          => 'www-data',
+      mode           => '0750',
+      owner          => $builduser,
       group          => 'www-data',
       require        => File[$webdirs]
     }
@@ -111,6 +111,7 @@ class role_ccw (
       rsyncuserkey        => $rsyncuserkey,
       rsyncuserkeytype    => $rsyncuserkeytype,
       rsyncuserkeycomment => $rsyncuserkeycomment,
+      rwwebdirs           => $rwwebdirs,
     }
   }
 
