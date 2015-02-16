@@ -8,7 +8,6 @@
 class role_ccw::repo ()
 {
 
-
 # ensure git package for repo checkouts
   package { 'git':
     ensure => installed,

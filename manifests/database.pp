@@ -1,6 +1,6 @@
-# == Class: linnaeusng::database
+# == Class: role_ccw::database
 #
-# database.pp for linnaeusng puppet module
+# database.pp for role_ccw puppet module
 #
 # Author : Hugo van Duijn
 #
@@ -12,7 +12,8 @@ class role_ccw::database ()
     root_password    => $role_ccw::mysqlRootPassword
   }
 
-# Add database + user, this is disabled by default since the buildscript should take care of this.
+# Add database + user
+# this is disabled by default since the buildscript should take care of this.
   if ($role_ccw::configuredb == true) {
     mysql::db { $role_ccw::dbName:
       user           => $role_ccw::dbUser,

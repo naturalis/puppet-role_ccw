@@ -1,6 +1,6 @@
-# == Class: base::users
+# == Class: role_ccw::sftpusers
 #
-#Installs users and ssh keys from hiera.
+#Installs users and ssh keys from user array
 #
 #
 define role_ccw::sftpusers(

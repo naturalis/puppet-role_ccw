@@ -23,7 +23,6 @@ class role_ccw (
   $repoversion                = 'present',
   $repokey                    = undef,
   $repokeyname                = 'githubkey',
-  $reposshauth                = true,
   $stagingdir                 = '/opt/ccw',
   $webdirs                    = ['/var/www/htdocs','/var/www/htdocs/thumbnails','/var/www/htdocs/documents'],
   $configuredb                = false,
@@ -49,8 +48,6 @@ class role_ccw (
                           },
                          },
 ){
-
-
 
   file { $webdirs:
     ensure         => 'directory',
@@ -95,7 +92,7 @@ class role_ccw (
   if ($stagingserver == 'true') {
     if $sftpusers {
       create_resources('role_ccw::sftpusers', $sftpusers)
-    }   
+    }
     class { 'role_ccw::staging': }
   }
 
@@ -104,5 +101,4 @@ class role_ccw (
     class { 'role_ccw::build': }
   }
 
-  
 }

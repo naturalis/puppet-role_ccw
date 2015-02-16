@@ -36,15 +36,15 @@ class role_ccw::build (){
   }
   
 # set local variable for buildscript.sh.erb template
-$buildhost                  = $role_ccw::buildhost
-$builddirectory             = $role_ccw::builddirectory
-$builduser                  = $role_ccw::builduser
-$docroot                    = $role_ccw::docroot
-$stagingdir                 = $role_ccw::stagingdir
-$mysqlRootPassword          = $role_ccw::mysqlRootPassword
-$dbName                     = $role_ccw::dbName
-$dbUser                     = $role_ccw::dbUser
-$dbPassword                 = $role_ccw::dbPassword
+  $buildhost                  = $role_ccw::buildhost
+  $builddirectory             = $role_ccw::builddirectory
+  $builduser                  = $role_ccw::builduser
+  $docroot                    = $role_ccw::docroot
+  $stagingdir                 = $role_ccw::stagingdir
+  $mysqlRootPassword          = $role_ccw::mysqlRootPassword
+  $dbName                     = $role_ccw::dbName
+  $dbUser                     = $role_ccw::dbUser
+  $dbPassword                 = $role_ccw::dbPassword
 
 # create buildscript from template
   file { "${role_ccw::builddirectory}/buildscript.sh":
