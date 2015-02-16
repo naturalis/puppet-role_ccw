@@ -7,15 +7,16 @@ Parameters
 -------------
 Sensible defaults for Naturalis in init.pp.
 
-```
-  instances            = Instance hash, see the default for parameters
-```
 
 
 Classes
 -------------
 - role_ccw
 - role_ccw::staging
+- role_ccw::build
+- role_ccw::repo
+- role_ccw::database
+- role_ccw::sftpusers
 
 
 Dependencies
@@ -31,8 +32,11 @@ class { role_ccw: }
 ```
 Result
 -------------
+When staging = true: 
+CCW Staging server, CCW server with staging directory and SFTP access to directories.
 
-
+When build = true
+CCW server with build script which will transfer database and data from staging server. 
 
 Limitations
 -------------

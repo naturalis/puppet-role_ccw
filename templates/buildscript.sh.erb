@@ -6,7 +6,35 @@
 buildkeylocation="<%= @builddirectory -%>/<%= @builduser -%>.key"
 buildhost="<%= @buildhost -%>"
 builduser="<%= @builduser -%>"
+stagingdir="<%= @stagingdir -%>"
+docroot="<%= @docroot -%>"
+dbName="<%= @dbName -%>"
+dbUser="<%= @dbUser -%>"
+dbPassword="<%= @dbPassword -%>"
+mysqlRootPassword="<%= @mysqlRootPassword -%>"
+dbDumpName="ccw.sql.gz"
 
-rsync -avz -e "ssh -o StrictHostKeyChecking=no -i ${buildkeylocation}" ${builduser}@${buildhost}:/var/www/htdocs /var/www/htdocs
-rsync -avz -e "ssh -o StrictHostKeyChecking=no -i ${buildkeylocation}" ${builduser}@${buildhost}:/opt/dbdump /tmp/dbdump
+service puppet stop
 
+mv ${docroot}/index.php /tmp/index.tmp
+
+cat << EOF > ${docroot}/index.php
+<h1>Build in progress</h1>
+<textarea cols=120 rows=40>
+<?php include('/tmp/buildlog.log'); ?>
+</textarea>
+EOF
+
+<% @webdirs.each do |webdir| -%>
+rsync -avz -e "ssh -o StrictHostKeyChecking=no -i ${buildkeylocation}" ${builduser}@${buildhost}:<%= webdir %>/* <%= webdir %> >> /tmp/buildlog.log
+<% end -%>
+rsync -avz -e "ssh -o StrictHostKeyChecking=no -i ${buildkeylocation}" ${builduser}@${buildhost}:${stagingdir}/db /tmp/ >> /tmp/buildlog.log
+
+mysql -u root -p${mysqlRootPassword} -e "DROP DATABASE IF EXISTS ${dbName}" >> /tmp/buildlog.log
+mysql -u root -p${mysqlRootPassword} -e "CREATE DATABASE IF NOT EXISTS ${dbName}" >> /tmp/buildlog.log
+gunzip < /tmp/db/${dbDumpName} | mysql -u root -p${mysqlRootPassword} ${dbName} >> /tmp/buildlog.log
+mysql -u root -p${mysqlRootPassword} -e "GRANT SELECT, INSERT, DELETE ON ${dbName}.* TO '${dbUser}'@'localhost' IDENTIFIED BY '${dbPassword}';" >> /tmp/buildlog.log
+mysql -u root -p${mysqlRootPassword} -e "FLUSH PRIVILEGES;" >> /tmp/buildlog.log
+rm ${docroot}/index.php
+mv /tmp/index.tmp ${docroot}/index.php
+service puppet start

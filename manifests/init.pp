@@ -24,15 +24,23 @@ class role_ccw (
   $repokey                    = undef,
   $repokeyname                = 'githubkey',
   $reposshauth                = true,
-  $webdirs                    = ['/var/www/htdocs'],
-  $rwwebdirs                  = ['/var/www/htdocs/thumbnails','/var/www/htdocs/documents'],
-  $configuredb                = true,
+  $stagingdir                 = '/opt/ccw',
+  $webdirs                    = ['/var/www/htdocs','/var/www/htdocs/thumbnails','/var/www/htdocs/documents'],
+  $configuredb                = false,
   $mysqlRootPassword          = 'rootpassword',
   $dbName                     = 'ccw',
   $dbUser                     = 'ccwdbuser',
   $dbPassword                 = 'dbpassword',
-  $instances                  = {'site.lampsite.nl' => {
-                           'serveraliases'   => '*.lampsite.nl',
+  $sftpusers                  = {'sftpuser' => {
+                                              'comment'         => 'Sftpuser 1',
+                                              'shell'           => '/bin/zsh',
+                                              'ssh_key_type'    => 'ssh-rsa',
+                                              'ssh_key_comment' => 'user1.ccw.naturalis.nl',
+                                              'ssh_key'         => 'AAAAB3NzaC1yc2EAAAABJQAAAIEAmdU9//WJ4BqGWoH1TW3VmRnIcTbCaog38evKayf6hNe/jBuLRU9/MjDLsd3CfiLXVMKmMPOaGiovXQ5r4R0sSq9GknZU+SBB1oYLQUDi/+XseJG1dnTucDQ/Gz5gyV1QvWf86aaT7169qRCy7iWRIoRYaua/R3HIpWMXrNlzL/0=',
+                                                },
+                                 },
+  $instances                  = {'ccw.naturalis.nl' => {
+                           'serveraliases'   => '*.naturalis.nl',
                            'docroot'         => '/var/www/htdocs',
                            'directories'     => [{ 'path' => '/var/www/htdocs', 'options' => '-Indexes +FollowSymLinks +MultiViews', 'allow_override' => 'All' }],
                            'port'            => 80,
@@ -42,21 +50,15 @@ class role_ccw (
                          },
 ){
 
-    file { $webdirs:
-      ensure         => 'directory',
-      mode           => '0750',
-      owner          => 'root',
-      group          => 'www-data',
-      require        => Class['apache']
-    }->
-    file { $rwwebdirs:
-      ensure         => 'directory',
-      mode           => '0750',
-      owner          => $builduser,
-      group          => 'www-data',
-      require        => File[$webdirs]
-    }
-  
+
+
+  file { $webdirs:
+    ensure         => 'directory',
+    mode           => '0770',
+    owner          => 'www-data',
+    group          => $rsyncuser,
+    require        => Class['apache']
+  }
 
 # install php module php-gd
   php::module { [ 'gd','mysql','curl' ]: }
@@ -70,59 +72,36 @@ class role_ccw (
   include apache::mod::rewrite
   include apache::mod::speling
 
-# Create instances (vhosts)
-  class { 'role_lamp::instances': 
-      instances      => $instances,
-  }
+# Create Apache Vitual host
+  create_resources('apache::vhost', $instances)
 
 # Configure MySQL 
-  class { 'role_ccw::database':
-    dbUser              => $dbUser,
-    dbPassword          => $dbPassword,
-    dbName              => $dbName,
-    mysqlRootPassword   => $mysqlRootPassword,
-    configuredb         => $configuredb,
-  }
-
+  class { 'role_ccw::database':  }
 
 # Get code from repository
-  class { 'role_ccw::repo':
-    repolocation  => $coderoot,
-    coderepo      => $coderepo,
-    repoversion   => $repoversion,
-    reposshauth   => $reposshauth,
-    repokey       => $repokey,
-    repokeyname   => $repokeyname,
-    repotype      => $repotype,
-  }
+  class { 'role_ccw::repo':  }
 
+# Create configfile from template
   file { "${docroot}/includes/config.inc.php":
     content       => template('role_ccw/config.inc.php.erb'),
     mode          => '0640',
-    owner         => 'root',
-    group         => $apachegroup,
+    owner         => 'www-data',
+    group         => $rsyncuser,
     require       => Class['role_ccw::repo'],
   }
 
-# include staging server code when true
+# include staging server code when stagingserver is true
+# add sftpusers and include staging.pp
   if ($stagingserver == 'true') {
-    class { 'role_ccw::staging':
-      rsyncuser           => $rsyncuser,
-      rsyncuserkey        => $rsyncuserkey,
-      rsyncuserkeytype    => $rsyncuserkeytype,
-      rsyncuserkeycomment => $rsyncuserkeycomment,
-      rwwebdirs           => $rwwebdirs,
-    }
+    if $sftpusers {
+      create_resources('role_ccw::sftpusers', $sftpusers)
+    }   
+    class { 'role_ccw::staging': }
   }
 
 # run build script when build = true
   if ($build == 'true') {
-    class { 'role_ccw::build':
-      builddirectory      => $builddirectory,
-      buildhost           => $buildhost,
-      buildkey            => $buildkey,
-      builduser           => $builduser,
-    }
+    class { 'role_ccw::build': }
   }
 
   
