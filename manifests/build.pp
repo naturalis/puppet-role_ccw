@@ -9,7 +9,7 @@
 class role_ccw::build (){
 
 # Configure Rsync/Build user
- user { $role_ccw::builduser :
+  user { $role_ccw::builduser :
     ensure      => present,
     groups      => $role_ccw::builduser,
     shell       => '/bin/sh',
@@ -23,7 +23,7 @@ class role_ccw::build (){
   }
 
 # create builddirectory
-  file { $role_ccw::builddirectory: 
+  file { $role_ccw::builddirectory:
     ensure        => directory
   }
 
@@ -34,7 +34,7 @@ class role_ccw::build (){
     owner         => 'root',
     require       => File[$role_ccw::builddirectory]
   }
-  
+
 # set local variable for buildscript.sh.erb template
   $buildhost                  = $role_ccw::buildhost
   $builddirectory             = $role_ccw::builddirectory

@@ -49,7 +49,7 @@ class role_ccw::staging ()
   }
 
 # create rsyncuser
- user { $role_ccw::rsyncuser :
+  user { $role_ccw::rsyncuser :
     ensure      => present,
     groups      => $role_ccw::rsyncuser,
     shell       => '/bin/sh',
@@ -69,7 +69,7 @@ class role_ccw::staging ()
     group       => $role_ccw::rsyncuser,
     mode        => '0700',
   }
-  
+
 # Create .ssh directory in rsync home directory
   file { "/home/${role_ccw::rsyncuser}/.ssh":
     ensure      => directory,
@@ -77,7 +77,7 @@ class role_ccw::staging ()
     group       => $role_ccw::rsyncuser,
     mode        => '0600',
   }
-  
+
 # Create authorized_keys file
   file { "/home/${role_ccw::rsyncuser}/.ssh/authorized_keys":
     ensure      => present,
@@ -92,13 +92,13 @@ class role_ccw::staging ()
     require =>  File["/home/${role_ccw::rsyncuser}/.ssh/authorized_keys"]
   }
 
-# set authorized key defaults    
+# set authorized key defaults
   $ssh_key_defaults = {
     ensure  => present,
     user    => $role_ccw::rsyncuser,
     type    => 'ssh-rsa'
   }
-  
+
 # fill authorized key with public rsync key
   if $role_ccw::rsyncuserkey {
     ssh_authorized_key { $role_ccw::rsyncuserkeycomment:

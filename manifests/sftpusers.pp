@@ -27,7 +27,7 @@ define role_ccw::sftpusers(
     group   => $username,
     mode    => '0700',
   }
-  
+
 # Create .ssh directory in homedirectory
   file { "/home/${username}/.ssh":
     ensure  => directory,
@@ -36,8 +36,10 @@ define role_ccw::sftpusers(
     mode    => '0600',
     require => File["/home/${username}"],
   }
-  
-# Create .zshrc file in homedirectory with default umask of 002. ( new files are not only readable but also writable by the rsync group this way)
+
+# Create .zshrc file in homedirectory with default umask of 002.
+# new files are not only readable but also writable by the
+# rsync group this way
   file { "/home/${username}/.zshrc":
     owner   => $username,
     group   => $username,
@@ -78,10 +80,10 @@ define role_ccw::sftpusers(
     }
   }
 
-# Create symlink in homedirectory to staging directory for easy access to content. 
+# Create symlink in homedirectory to staging directory for access to content
   file { "/home/${username}/ccw":
-    ensure => 'link',
-    target => $role_ccw::stagingdir,
+    ensure  => 'link',
+    target  => $role_ccw::stagingdir,
     require => File["/home/${username}"]
   }
 

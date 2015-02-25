@@ -4,7 +4,7 @@
 #
 # Author : Hugo van Duijn
 #
-class role_ccw::database () 
+class role_ccw::database ()
 {
 
 # Install mysql server and set root password

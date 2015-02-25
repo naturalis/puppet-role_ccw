@@ -22,35 +22,35 @@ $repokeyname = $role_ccw::repokeyname
   }->
 # Create /root/.ssh/repokeyname file
   file { "/root/.ssh/${role_ccw::repokeyname}":
-    ensure    => "present",
+    ensure    => present,
     content   => $role_ccw::repokey,
-    mode      => 600,
+    mode      => '0600',
   }->
-# Create sshconfig file 
+# Create sshconfig file
   file { '/root/.ssh/config':
-    ensure    => "present",
+    ensure    => present,
     content   =>  template('role_ccw/sshconfig.erb'),
-    mode      => 600,
+    mode      => '0600',
   }->
 # copy known_hosts.sh file from puppet module
   file{ '/usr/local/sbin/known_hosts.sh' :
     ensure    => present,
-    mode      => 0700,
+    mode      => '0700',
     source    => 'puppet:///modules/role_ccw/known_hosts.sh',
   }->
 # run known_hosts.sh for future acceptance of github key
   exec{ 'add_known_hosts' :
-    command   => "/usr/local/sbin/known_hosts.sh",
-    path      => "/sbin:/usr/bin:/usr/local/bin/:/bin/",
+    command   => '/usr/local/sbin/known_hosts.sh',
+    path      => '/sbin:/usr/bin:/usr/local/bin/:/bin/',
     provider  => shell,
     user      => 'root',
     unless    => 'test -f /root/.ssh/known_hosts'
   }->
 # give known_hosts file the correct permissions
   file{ '/root/.ssh/known_hosts':
-    mode      => 600,
+    mode      => '0600',
   }->
-# checkout using vcsrepo 
+# checkout using vcsrepo
   vcsrepo { $role_ccw::docroot:
     ensure    => $role_ccw::repoversion,
     provider  => $role_ccw::repotype,
