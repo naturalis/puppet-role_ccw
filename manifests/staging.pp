@@ -8,6 +8,21 @@
 #
 class role_ccw::staging ()
 {
+
+# import variable for usage in admin configfile
+  $dbName                     = $role_ccw::dbName
+  $dbUser                     = $role_ccw::dbUser
+  $dbPassword                 = $role_ccw::dbPassword
+
+# Create admin configfile from template
+  file { "${role_ccw::docroot}/admin/admin_config.inc.php":
+    content       => template('role_ccw/admin_config.inc.php.erb'),
+    mode          => '0640',
+    owner         => 'www-data',
+    group         => $role_ccw::rsyncuser,
+    require       => Class['role_ccw::repo'],
+  }
+
 # Create Staging directory
   file { $role_ccw::stagingdir:
     ensure      => 'directory',
@@ -41,11 +56,9 @@ class role_ccw::staging ()
 
 # Create Staging xml subdirectory
   file { "${role_ccw::stagingdir}/xml":
-    ensure      => 'directory',
-    require     => File[$role_ccw::stagingdir],
-    owner       => $role_ccw::rsyncuser,
-    group       => $role_ccw::rsyncuser,
-    mode        => '0770'
+    ensure      => 'link',
+    target      => "${role_ccw::docroot}/xml",
+    require     => File[$role_ccw::webdirs]
   }
 
 # create rsyncuser
@@ -107,6 +120,24 @@ class role_ccw::staging ()
       type    => $role_ccw::rsyncuserkeytype,
       key     => $role_ccw::rsyncuserkey,
     }
+  }
+
+# create database dump when new import is finished.
+# import log file is monitored, dbdump is run when
+# file date changes
+  file { "${role_ccw::docroot}/admin/version.txt":
+    mode          => '0770',
+    audit         => mtime,
+    recurse       => false,
+    notify        => Exec['dbdump'],
+    require       => Class['mysql::server']
+  }
+
+# dbdump exec
+  exec { 'dbdump':
+    path          => ['/usr/bin','/usr/sbin','/usr/local/bin','/usr/local/sbin','/bin'],
+    refreshonly   => true,
+    command       => "mysqldump -u root -p${role_ccw::mysqlRootPassword} --opt --flush-logs --single-transaction --databases ${role_ccw::dbName} | gzip -c > ${role_ccw::stagingdir}/db/ccw.sql.gz",
   }
 
 }
