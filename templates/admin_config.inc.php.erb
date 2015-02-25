@@ -1,0 +1,134 @@
+<?php
+
+$host = "localhost";
+$db = "<%= @dbName -%>";
+$user = "<%= @dbUser -%>";
+$pw = "<%= @dbPassword -%>";
+
+$taxa_db = "ccw_taxa";
+$literature_db = "ccw_refs";
+$citat_db = "ccw_citats";
+
+$xmlPath = '/var/www/htdocs/xml/';
+$documentsPath = '/var/www/htdocs/documents/';
+$thumbnailsPath = '/var/www/htdocs/thumbnails/';
+
+$mapping = array(
+	'ccwrefs' => array(
+		"author's reprintnr" => 'author_sreprintnr_',
+		'author ID' => 'authorID_',
+		'author' => 'author_',
+		'checked for CCW' => 'checkedforCCW_',
+		'list nr' => 'listnr_',
+		'notes' => 'notes_',
+		'publ. date' => 'publ_date_',
+		'publ.' => 'publ__',
+		'ref nr' => 'refnr_',
+		'region' => 'region_',
+		'remarks' => 'remarksoncitationanddating_',
+		'seq.' => 'seq__',
+		'source' => 'source_',
+		'year as given by author' => 'yearasgivenbyauthor_',
+		'year' => 'year_',
+		'yearseq.' => 'yearseq__',
+        'title' => 'title_'
+	),
+    'ccwcitats' => array(
+        'altit' => 'altit_',
+        'auth' => 'auth_',
+        'biology' => 'biology_',
+        'CCW country code' => 'CCWcountrycode_',
+        'citation' => 'citation_',
+        'distribution' => 'distribution_',
+        'family' => 'family_',
+        'genus' => 'genus_',
+        'month' => 'month_',
+        'spec' => 'spec_',
+        'subfamily' => 'subfamily_',
+        'subg' => 'subg_',
+        'subsp' => 'subsp_',
+        'taxonomy' => 'taxonomy_',
+        'year' => 'year_'
+    ),
+    'ccwtaxa' => array(
+        'af' => 'af_',
+        'ao' => 'ao_',
+        'auth' => 'auth_',
+        'cat nr' => 'catnr_',
+        'checked orig. descr.' => 'checkedorig_descr__',
+        'descr' => 'descr_',
+        'descr. as' => 'descr_as_',
+        'descr. taxon. notes' => 'descr_taxon_notes_',
+        'distr' => 'distr_',
+        'distr. gen. notes' => 'distr_gen_notes_',
+        'ep' => 'ep_',
+        'family' => 'family_',
+        'figs listed' => 'figslisted_',
+        'genus' => 'genus_',
+        'higher taxon' => 'highertaxon_',
+        'imm.stagesandbiology' => 'imm_stagesandbiology_',
+        'misident.' => 'misident__',
+        'na' => 'na_',
+        'no' => 'no_',
+        'non tip' => 'nontip_',
+        'ori' => 'ori_',
+        'orig. genus' => 'orig_genus_',
+        'orig. name' => 'orig_name_',
+        'reprintnr' => 'reprintnr_',
+        'revision' => 'revision_',
+        'search all addit. fields' => 'searchalladdit_fields_',
+        'sp.gr' => 'sp_gr_',
+        'spec' => 'spec_',
+        'spell comm' => 'spellcomm_',
+        'spell' => 'spell_',
+        'ssp' => 'ssp_',
+        'subfamily' => 'subfamily_',
+        'subg' => 'subg_',
+        'subsp' => 'subsp_',
+        'syn' => 'syn_',
+        'syns' => 'syns_',
+        'to be checked' => 'tobechecked_',
+        'type loc.' => 'typeloc__',
+        'unr df' => 'unrdf_',
+        'user field 2' => 'userfield2_',
+        'user field' => 'userfield_',
+        'wp' => 'wp_',
+        'yearnr' => 'yearnr_'
+    )
+);
+
+
+$multimediaTypes = array(
+    // habitus
+    'A' => array(
+        'male',
+        'female',
+        'copula'
+    ),
+    // body parts
+    'B' => array(
+        'ant',
+        'head',
+        'hean',
+        'heth',
+        'leg',
+        'claw',
+        'wing',
+        'abd',
+        'thor'
+    ),
+    // hypopygium
+    'H' => array(),
+    // ovipositor
+    'O' => array(),
+    // wing
+    'W' => array(),
+    // larva
+    'L' => array(),
+    // pupa
+    'P' => array(),
+    // habitat
+    'N' => array()
+);
+?>
+
