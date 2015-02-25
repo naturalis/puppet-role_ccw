@@ -3,6 +3,7 @@
 # Buildscript for CCW
 #
 
+# setting variables
 buildkeylocation="<%= @builddirectory -%>/<%= @builduser -%>.key"
 buildhost="<%= @buildhost -%>"
 builduser="<%= @builduser -%>"
@@ -14,8 +15,7 @@ dbPassword="<%= @dbPassword -%>"
 mysqlRootPassword="<%= @mysqlRootPassword -%>"
 dbDumpName="ccw.sql.gz"
 
-service puppet stop
-
+# Temporary replace index.php for build status page.
 mv ${docroot}/index.php /tmp/index.tmp
 
 cat << EOF > ${docroot}/index.php
@@ -25,16 +25,26 @@ cat << EOF > ${docroot}/index.php
 </textarea>
 EOF
 
+# Rsync every webdirectory from staging server to production server
 <% @webdirs.each do |webdir| -%>
 rsync -avz -e "ssh -o StrictHostKeyChecking=no -i ${buildkeylocation}" ${builduser}@${buildhost}:<%= webdir %>/* <%= webdir %> >> /tmp/buildlog.log
 <% end -%>
+
+# Rsync the database dump from staging server to /tmp
 rsync -avz -e "ssh -o StrictHostKeyChecking=no -i ${buildkeylocation}" ${builduser}@${buildhost}:${stagingdir}/db /tmp/ >> /tmp/buildlog.log
 
+# Drop and (re)create database
 mysql -u root -p${mysqlRootPassword} -e "DROP DATABASE IF EXISTS ${dbName}" >> /tmp/buildlog.log
 mysql -u root -p${mysqlRootPassword} -e "CREATE DATABASE IF NOT EXISTS ${dbName}" >> /tmp/buildlog.log
+
+# import compressed database dump 
 gunzip < /tmp/db/${dbDumpName} | mysql -u root -p${mysqlRootPassword} ${dbName} >> /tmp/buildlog.log
+
+# Assing correct permissions to database user
 mysql -u root -p${mysqlRootPassword} -e "GRANT SELECT, INSERT, DELETE ON ${dbName}.* TO '${dbUser}'@'localhost' IDENTIFIED BY '${dbPassword}';" >> /tmp/buildlog.log
 mysql -u root -p${mysqlRootPassword} -e "FLUSH PRIVILEGES;" >> /tmp/buildlog.log
+
+# Replace build status page for original index.php
 rm ${docroot}/index.php
 mv /tmp/index.tmp ${docroot}/index.php
-service puppet start
+

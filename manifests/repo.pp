@@ -59,5 +59,17 @@ $repokeyname = $role_ccw::repokeyname
     revision  => 'master',
     require   => Package['git']
   }
+
+# remove admin directory when staging is false
+  if ($role_ccw::stagingserver == false){
+    file {'remove admin directory':
+        ensure  => absent,
+        path    => "${role_ccw::docroot}/admin",
+        recurse => true,
+        purge   => true,
+        force   => true,
+        require => Vcsrepo[$role_ccw::docroot]
+    }
+  }
 }
 

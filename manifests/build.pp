@@ -51,7 +51,18 @@ class role_ccw::build (){
     content       => template('role_ccw/buildscript.sh.erb'),
     mode          => '0700',
     owner         => 'root',
+    notify        => Exec['runbuild'],
+    audit         => mtime,
     require       => File[$role_ccw::builddirectory]
+  }
+
+# Run Buildscript but don't stay up for the results
+# With immense timeout setting of 4 hours since the buildscript may take some time.
+  exec { 'runbuild':
+    path          => ['/usr/bin','/usr/sbin','/usr/local/bin','/usr/local/sbin','/bin'],
+    refreshonly   => true,
+    command       => "${role_ccw::builddirectory}/buildscript.sh",
+    timeout       => 14400
   }
 
 }
