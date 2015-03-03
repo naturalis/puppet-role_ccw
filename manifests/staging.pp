@@ -19,7 +19,7 @@ class role_ccw::staging ()
     content       => template('role_ccw/admin_config.inc.php.erb'),
     mode          => '0640',
     owner         => 'www-data',
-    group         => $role_ccw::rsyncuser,
+    group         => $role_ccw::staginguser,
     require       => Class['role_ccw::repo'],
   }
 
@@ -27,16 +27,16 @@ class role_ccw::staging ()
   file { $role_ccw::stagingdir:
     ensure      => 'directory',
     mode        => '0770',
-    owner       => $role_ccw::rsyncuser,
-    group       => $role_ccw::rsyncuser,
+    owner       => $role_ccw::staginguser,
+    group       => $role_ccw::staginguser,
   }
 
 # Create Staging db subdirectory
   file { "${role_ccw::stagingdir}/db":
     ensure      => 'directory',
     mode        => '0770',
-    owner       => $role_ccw::rsyncuser,
-    group       => $role_ccw::rsyncuser,
+    owner       => $role_ccw::staginguser,
+    group       => $role_ccw::staginguser,
     require     => File[$role_ccw::stagingdir]
   }
 
@@ -61,64 +61,64 @@ class role_ccw::staging ()
     require     => File[$role_ccw::webdirs]
   }
 
-# create rsyncuser
-  user { $role_ccw::rsyncuser :
+# create staginguser
+  user { $role_ccw::staginguser :
     ensure      => present,
-    groups      => $role_ccw::rsyncuser,
+    groups      => $role_ccw::staginguser,
     shell       => '/bin/sh',
-    comment     => $role_ccw::rsyncusercomment,
-    require     => Group[$role_ccw::rsyncuser],
+    comment     => $role_ccw::staginguserkeycomment,
+    require     => Group[$role_ccw::staginguser],
   }
 
 # Create rsync group
-  group { $role_ccw::rsyncuser :
+  group { $role_ccw::staginguser :
     ensure      => present,
   }
 
 # Create rsync homedirectory
-  file { "/home/${role_ccw::rsyncuser}":
+  file { "/home/${role_ccw::staginguser}":
     ensure      => directory,
-    owner       => $role_ccw::rsyncuser,
-    group       => $role_ccw::rsyncuser,
+    owner       => $role_ccw::staginguser,
+    group       => $role_ccw::staginguser,
     mode        => '0700',
   }
 
 # Create .ssh directory in rsync home directory
-  file { "/home/${role_ccw::rsyncuser}/.ssh":
+  file { "/home/${role_ccw::staginguser}/.ssh":
     ensure      => directory,
-    owner       => $role_ccw::rsyncuser,
-    group       => $role_ccw::rsyncuser,
+    owner       => $role_ccw::staginguser,
+    group       => $role_ccw::staginguser,
     mode        => '0600',
   }
 
 # Create authorized_keys file
-  file { "/home/${role_ccw::rsyncuser}/.ssh/authorized_keys":
+  file { "/home/${role_ccw::staginguser}/.ssh/authorized_keys":
     ensure      => present,
-    owner       => $role_ccw::rsyncuser,
-    group       => $role_ccw::rsyncuser,
+    owner       => $role_ccw::staginguser,
+    group       => $role_ccw::staginguser,
     mode        => '0600',
-    require     => File["/home/${role_ccw::rsyncuser}/.ssh"],
+    require     => File["/home/${role_ccw::staginguser}/.ssh"],
     }
 
 # create authorized key
   Ssh_authorized_key {
-    require =>  File["/home/${role_ccw::rsyncuser}/.ssh/authorized_keys"]
+    require =>  File["/home/${role_ccw::staginguser}/.ssh/authorized_keys"]
   }
 
 # set authorized key defaults
   $ssh_key_defaults = {
     ensure  => present,
-    user    => $role_ccw::rsyncuser,
+    user    => $role_ccw::staginguser,
     type    => 'ssh-rsa'
   }
 
 # fill authorized key with public rsync key
-  if $role_ccw::rsyncuserkey {
-    ssh_authorized_key { $role_ccw::rsyncuserkeycomment:
+  if $role_ccw::staginguserpubkey {
+    ssh_authorized_key { $role_ccw::staginguserkeycomment:
       ensure  => present,
-      user    => $role_ccw::rsyncuser,
-      type    => $role_ccw::rsyncuserkeytype,
-      key     => $role_ccw::rsyncuserkey,
+      user    => $role_ccw::staginguser,
+      type    => $role_ccw::staginguserkeytype,
+      key     => $role_ccw::staginguserpubkey,
     }
   }
 

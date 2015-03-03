@@ -7,23 +7,22 @@
 #
 #
 class role_ccw (
-  $rsyncuser                  = 'rsync',
-  $rsyncuserkey               = 'AAAAB3NzaC1yc2EAAAADAQABAAABAQCaNpPzWph56gaxhHmimfhQBygiQfM5FAwnCUnIDm3wf9bfGclSd7BbuGSiduoOav5ATCkWPfow3jyLMMEkRr2SyJvHFr6SIIdjVV3ygZ8er7IhutAE78cIdIQVZ0bFBdAp/r8TFCjhw5Gi4Y3u+1PxNfgfmdpnKWAvjAAuOJQ4JJ+JPdwT7lnyLP39Q/3jLBIuzju+yNXTH/UCjl4lWwKmTRAC0HeW1s78kYyHCrhihECSGnuptqRukkEQuvUZupG/u+0HaO548VXn6uNUhiN9t7mPJ3c8aM0hbCrPAK6kKBk4l0eAd3CpHWIly5et/yZEmaze8+yv3d8OghhmBSfJ',
-  $rsyncuserkeytype           = 'ssh-rsa',
-  $rsyncuserkeycomment        = 'rsyncuser',
+  $staginguser                = 'rsync',
+  $staginguserpubkey          = 'AAAAB3NzaC1yc2EAAAADAQABAAABAQCaNpPzWph56gaxhHmimfhQBygiQfM5FAwnCUnIDm3wf9bfGclSd7BbuGSiduoOav5ATCkWPfow3jyLMMEkRr2SyJvHFr6SIIdjVV3ygZ8er7IhutAE78cIdIQVZ0bFBdAp/r8TFCjhw5Gi4Y3u+1PxNfgfmdpnKWAvjAAuOJQ4JJ+JPdwT7lnyLP39Q/3jLBIuzju+yNXTH/UCjl4lWwKmTRAC0HeW1s78kYyHCrhihECSGnuptqRukkEQuvUZupG/u+0HaO548VXn6uNUhiN9t7mPJ3c8aM0hbCrPAK6kKBk4l0eAd3CpHWIly5et/yZEmaze8+yv3d8OghhmBSfJ',
+  $staginguserprivkey         = undef,
+  $staginguserkeytype         = 'ssh-rsa',
+  $staginguserkeycomment      = 'rsyncuser',
   $stagingserver              = false,
-  $build                      = undef,
-  $buildhost                  = '10.42.1.200',
-  $buildkey                   = undef,
+  $stagingdir                 = '/opt/ccw',
+  $stagingserveraddress       = '10.42.1.200',
+  $build                      = false,
   $builddirectory             = '/opt/build',
-  $builduser                  = 'rsync',
   $docroot                    = '/var/www/htdocs',
   $coderepo                   = 'git@github.com:naturalis/ccw.git',
   $repotype                   = 'git',
   $repoversion                = 'present',
   $repokey                    = undef,
   $repokeyname                = 'githubkey',
-  $stagingdir                 = '/opt/ccw',
   $webdirs                    = ['/var/www/htdocs','/var/www/htdocs/thumbnails',
                                 '/var/www/htdocs/documents','/var/www/htdocs/xml'],
   $configuredb                = false,
@@ -53,9 +52,9 @@ class role_ccw (
 
   file { $webdirs:
     ensure         => 'directory',
-    mode           => '0770',
+    mode           => '2770',
     owner          => 'www-data',
-    group          => $rsyncuser,
+    group          => $staginguser,
     require        => Class['apache']
   }
 
@@ -85,7 +84,7 @@ class role_ccw (
     content       => template('role_ccw/config.inc.php.erb'),
     mode          => '0640',
     owner         => 'www-data',
-    group         => $rsyncuser,
+    group         => $staginguser,
     require       => Class['role_ccw::repo'],
   }
 

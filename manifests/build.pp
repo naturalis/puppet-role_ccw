@@ -9,16 +9,16 @@
 class role_ccw::build (){
 
 # Configure Rsync/Build user
-  user { $role_ccw::builduser :
+  user { $role_ccw::staginguser :
     ensure      => present,
-    groups      => $role_ccw::builduser,
+    groups      => $role_ccw::staginguser,
     shell       => '/bin/sh',
-    comment     => $role_ccw::builduser,
-    require     => Group[$role_ccw::builduser],
+    comment     => $role_ccw::staginguser,
+    require     => Group[$role_ccw::staginguser],
   }
 
-# create builduser group
-  group { $role_ccw::builduser :
+# create staginguser group
+  group { $role_ccw::staginguser :
     ensure        => present,
   }
 
@@ -28,17 +28,17 @@ class role_ccw::build (){
   }
 
 # create private key for rsync ssh connectivity to staging server
-  file { "${role_ccw::builddirectory}/${role_ccw::builduser}.key":
-    content       => $role_ccw::buildkey,
+  file { "${role_ccw::builddirectory}/${role_ccw::staginguser}.key":
+    content       => $role_ccw::staginguserprivkey,
     mode          => '0700',
     owner         => 'root',
     require       => File[$role_ccw::builddirectory]
   }
 
 # set local variable for buildscript.sh.erb template
-  $buildhost                  = $role_ccw::buildhost
+  $stagingserver              = $role_ccw::stagingserver
   $builddirectory             = $role_ccw::builddirectory
-  $builduser                  = $role_ccw::builduser
+  $staginguser                = $role_ccw::staginguser
   $docroot                    = $role_ccw::docroot
   $stagingdir                 = $role_ccw::stagingdir
   $mysqlRootPassword          = $role_ccw::mysqlRootPassword

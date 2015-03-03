@@ -20,12 +20,18 @@ define role_ccw::sftpusers(
     comment     => $comment,
   }
 
+# Create user group
+  group { $username :
+    ensure      => present,
+  }
+
 # Create homedirectory
   file { "/home/${username}":
     ensure  => directory,
     owner   => $username,
     group   => $username,
     mode    => '0700',
+    require => Group[$username]
   }
 
 # Create .ssh directory in homedirectory
