@@ -12,6 +12,13 @@ class role_ccw::database ()
     root_password    => $role_ccw::mysqlRootPassword
   }
 
+# copy known_hosts.sh file from puppet module
+  file{ '/opt/ccw.sql' :
+    ensure    => present,
+    mode      => '0700',
+    source    => 'puppet:///modules/role_ccw/ccw.sql',
+  }
+
 # Add database + user
 # this is disabled by default since the buildscript should take care of this.
   if ($role_ccw::configuredb == true) or ($role_ccw::stagingserver == true) {
@@ -20,6 +27,8 @@ class role_ccw::database ()
       password       => $role_ccw::dbPassword,
       host           => 'localhost',
       grant          => ['ALL'],
+      sql            => '/opt/ccw.sql',
+      import_timeout => 900
     }
   }
 }
