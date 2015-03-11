@@ -30,6 +30,8 @@ class role_ccw (
   $dbName                     = 'ccw',
   $dbUser                     = 'ccwdbuser',
   $dbPassword                 = 'dbpassword',
+  $adminpageuser              = 'admin',
+  $adminpagepassword          = 'password',
   $sftpusers                  = {'sftpuser' => {
                                   'comment'         => 'Sftpuser 1',
                                   'ssh_key_type'    => 'ssh-rsa',
@@ -52,7 +54,7 @@ class role_ccw (
 
   file { $webdirs:
     ensure         => 'directory',
-    mode           => '2770',
+    mode           => '2775',
     owner          => 'www-data',
     group          => $staginguser,
     require        => Class['apache']

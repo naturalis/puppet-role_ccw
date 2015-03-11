@@ -126,7 +126,10 @@ class role_ccw::staging ()
 # import log file is monitored, dbdump is run when
 # file date changes
   file { "${role_ccw::docroot}/admin/version.txt":
-    mode          => '0770',
+    ensure        => present,
+    mode          => '0660',
+    owner         => 'www-data',
+    group         => 'www-data',
     audit         => mtime,
     recurse       => false,
     notify        => Exec['dbdump'],
@@ -138,6 +141,18 @@ class role_ccw::staging ()
     path          => ['/usr/bin','/usr/sbin','/usr/local/bin','/usr/local/sbin','/bin'],
     refreshonly   => true,
     command       => "mysqldump -u root -p${role_ccw::mysqlRootPassword} --opt --flush-logs --single-transaction --databases ${role_ccw::dbName} | gzip -c > ${role_ccw::stagingdir}/db/ccw.sql.gz",
+  }
+
+# Create htaccess / htpasswd in admin folder
+  package{'apache2-utils':
+    ensure        => installed
+  }
+
+# Create htaccess / htpasswd in admin folder
+  role_ccw::htpasswd {$role_ccw::adminpageuser:
+    password        => $role_ccw::adminpagepassword,
+    location        => "${role_ccw::docroot}/admin",
+    require         => [Package['apache2-utils'],Class[Role_ccw::Repo]]
   }
 
 }

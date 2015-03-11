@@ -14,7 +14,7 @@ class role_ccw::database ()
 
 # Add database + user
 # this is disabled by default since the buildscript should take care of this.
-  if ($role_ccw::configuredb == true) {
+  if ($role_ccw::configuredb == true) or ($role_ccw::stagingserver == true) {
     mysql::db { $role_ccw::dbName:
       user           => $role_ccw::dbUser,
       password       => $role_ccw::dbPassword,
