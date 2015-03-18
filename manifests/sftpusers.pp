@@ -14,8 +14,8 @@ define role_ccw::sftpusers(
 # Create user and set rsync group as default group
   user { $username :
     ensure      => present,
-    groups      => $role_ccw::rsyncuser,
-    gid         => $role_ccw::rsyncuser,
+    groups      => $role_ccw::staginguser,
+    gid         => $role_ccw::staginguser,
     shell       => '/bin/zsh',
     comment     => $comment,
   }
