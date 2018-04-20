@@ -1,17 +1,18 @@
 <?php
 
-$host = "localhost";
-$db = "<%= @dbName -%>";
-$user = "<%= @dbUser -%>";
-$pw = "<%= @dbPassword -%>";
+$host = "<%= scope['role_ccw::mysql_host'] %>";
+$db = "<%= scope['role_ccw::mysql_db'] %>";
+$user = "<%= scope['role_ccw::mysql_user'] %>";
+$pw = "<%= scope['role_ccw::mysql_password'] %>";
+
 
 $taxa_db = "ccw_taxa";
 $literature_db = "ccw_refs";
 $citat_db = "ccw_citats";
 
-$xmlPath = '/var/www/htdocs/xml/';
-$documentsPath = '/var/www/htdocs/documents/';
-$thumbnailsPath = '/var/www/htdocs/thumbnails/';
+$xmlPath = '/var/www/html/xml/';
+$documentsPath = '/var/www/html/documents/';
+$thumbnailsPath = '/var/www/html/thumbnails/';
 
 
 $mapping = array(

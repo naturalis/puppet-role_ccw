@@ -7,76 +7,30 @@
 #
 #
 class role_ccw (
-  $staginguser                = 'rsync',
-  $staginguserpubkey          = 'AAAAB3NzaC1yc2EAAAADAQABAAABAQCaNpPzWph56gaxhHmimfhQBygiQfM5FAwnCUnIDm3wf9bfGclSd7BbuGSiduoOav5ATCkWPfow3jyLMMEkRr2SyJvHFr6SIIdjVV3ygZ8er7IhutAE78cIdIQVZ0bFBdAp/r8TFCjhw5Gi4Y3u+1PxNfgfmdpnKWAvjAAuOJQ4JJ+JPdwT7lnyLP39Q/3jLBIuzju+yNXTH/UCjl4lWwKmTRAC0HeW1s78kYyHCrhihECSGnuptqRukkEQuvUZupG/u+0HaO548VXn6uNUhiN9t7mPJ3c8aM0hbCrPAK6kKBk4l0eAd3CpHWIly5et/yZEmaze8+yv3d8OghhmBSfJ',
-  $staginguserprivkey         = undef,
-  $staginguserkeytype         = 'ssh-rsa',
-  $staginguserkeycomment      = 'rsyncuser',
-  $stagingserver              = false,
-  $stagingdir                 = '/opt/ccw',
-  $stagingserveraddress       = '10.42.1.200',
-  $build                      = false,
-  $builddirectory             = '/opt/build',
-  $docroot                    = '/var/www/htdocs',
+  $compose_version            = '1.17.1',
+  $repo_source                = 'https://github.com/naturalis/docker-ccw.git',
+  $repo_ensure                = 'latest',  
   $coderepo                   = 'git@github.com:naturalis/ccw.git',
   $repotype                   = 'git',
   $repoversion                = 'present',
   $repokey                    = undef,
   $repokeyname                = 'githubkey',
-  $webdirs                    = ['/var/www/htdocs','/var/www/htdocs/thumbnails',
-                                '/var/www/htdocs/documents','/var/www/htdocs/xml'],
-  $configuredb                = false,
-  $mysqlRootPassword          = 'rootpassword',
-  $dbName                     = 'ccw',
-  $dbUser                     = 'ccwdbuser',
-  $dbPassword                 = 'dbpassword',
-  $adminpageuser              = 'admin',
-  $adminpagepassword          = 'password',
-  $sftpusers                  = {'sftpuser' => {
-                                  'comment'         => 'Sftpuser 1',
-                                  'ssh_key_type'    => 'ssh-rsa',
-                                  'ssh_key_comment' => 'user1.ccw.naturalis.nl',
-                                  'ssh_key'         => 'AAAAB3NzaC1yc2EAAAABJQAAAIEAmdU9//WJ4BqGWoH1TW3VmRnIcTbCaog38evKayf6hNe/jBuLRU9/MjDLsd3CfiLXVMKmMPOaGiovXQ5r4R0sSq9GknZU+SBB1oYLQUDi/+XseJG1dnTucDQ/Gz5gyV1QvWf86aaT7169qRCy7iWRIoRYaua/R3HIpWMXrNlzL/0=',
-                                                },
-                                },
-  $instances                  = {'ccw.naturalis.nl' => {
-                          'serveraliases'   => '*.naturalis.nl',
-                          'docroot'         => '/var/www/htdocs',
-                          'directories'     => [{ 'path' => '/var/www/htdocs',
-                          'options' => '-Indexes +FollowSymLinks +MultiViews',
-                          'allow_override' => 'All'}],
-                          'port'            => 80,
-                          'serveradmin'     => 'webmaster@naturalis.nl',
-                          'priority'        => 10,
-                          },
-                        },
+  $mysql_root_password        = 'rootpassword',
+  $mysql_host                 = 'db',
+  $mysql_db                   = 'ccw',
+  $mysql_user                 = 'ccwdbuser',
+  $mysql_password             = 'dbpassword',
+  $ccw_url                    = 'ccw.naturalis.nl',
+  $minio_url                  = 'ccw-storage.naturalis.nl',
+  $minio_access_key           = '12345',
+  $minio_secret_key           = '12345678',
+  $adminpageuser              = '12345',
+  $adminpagepassword          = '12345678',
+  $repo_dir                   = '/opt/docker-ccw',
+  $docroot                    = '/data/ccw/www',
+  $traefik_toml_file          = '/opt/traefik/traefik.toml',
+  $traefik_acme_json          = '/opt/traefik/acme.json',
 ){
-
-  file { $webdirs:
-    ensure         => 'directory',
-    mode           => '2775',
-    owner          => 'www-data',
-    group          => $staginguser,
-    require        => Class['apache']
-  }
-
-# install php module php-gd
-  php::module { [ 'gd','mysql','curl' ]: }
-
-# Install apache and enable modules
-  class { 'apache':
-    default_mods     => true,
-    mpm_module       => 'prefork',
-  }
-  include apache::mod::php
-  include apache::mod::rewrite
-  include apache::mod::speling
-
-# Create Apache Vitual host
-  create_resources('apache::vhost', $instances)
-
-# Configure MySQL
-  class { 'role_ccw::database':  }
 
 # Get code from repository
   class { 'role_ccw::repo':  }
@@ -84,24 +38,124 @@ class role_ccw (
 # Create configfile from template
   file { "${docroot}/includes/config.inc.php":
     content       => template('role_ccw/config.inc.php.erb'),
-    mode          => '0640',
-    owner         => 'www-data',
-    group         => $staginguser,
+    mode          => '0644',
     require       => Class['role_ccw::repo'],
   }
 
-# include staging server code when stagingserver is true
-# add sftpusers and include staging.pp
-  if ($stagingserver == true) {
-    if $sftpusers {
-      create_resources('role_ccw::sftpusers', $sftpusers)
-    }
-    class { 'role_ccw::staging': }
+# Create htaccess / htpasswd in admin folder
+  ensure_packages(['apache2-utils','git'])
+
+# Create htaccess / htpasswd in admin folder
+  role_ccw::htpasswd {$role_ccw::adminpageuser:
+    password        => $role_ccw::adminpagepassword,
+    location        => "${role_ccw::docroot}/admin",
+    require         => [Package['apache2-utils'],Class[Role_ccw::Repo]]
   }
 
-# run build script when build = true
-  if ($build == true) {
-    class { 'role_ccw::build': }
+# Create admin configfile from template
+  file { "${role_ccw::docroot}/admin/admin_config.inc.php":
+    content       => template('role_ccw/admin_config.inc.php.erb'),
+    mode          => '0644',
+    require       => Class['role_ccw::repo'],
+  }
+
+
+  file { '/data/ccw/initdb/1_init_db.sql':
+    ensure   => file,
+    mode     => '0600',
+    content  => template('role_ccw/1_init_db.erb'),
+    require  => File['/data/ccw/initdb'],
+  }
+
+  include 'docker'
+  include 'stdlib'
+
+  Exec {
+    path => '/usr/local/bin/',
+    cwd  => $role_ccw::repo_dir,
+  }
+
+  file { ['/data','/data/ccw','/data/ccw/initdb','/data/ccw/mysqlconf','/data/ccw/traefik', '/opt/traefik', $role_ccw::repo_dir] :
+    ensure   => directory,
+  }
+
+  file { "${role_ccw::repo_dir}/.env":
+    ensure   => file,
+    mode     => '0600',
+    content  => template('role_ccw/env.erb'),
+    require  => Vcsrepo[$role_ccw::repo_dir],
+    notify   => Exec['Restart containers on change'],
+  }
+
+  class {'docker::compose': 
+    ensure      => present,
+    version     => $role_ccw::compose_version,
+    notify      => Exec['apt_update']
+  }
+
+  docker_network { 'web':
+    ensure   => present,
+  }
+
+  ensure_packages(['git','python3'], { ensure => 'present' })
+
+  vcsrepo { $role_ccw::repo_dir:
+    ensure    => $role_ccw::repo_ensure,
+    source    => $role_ccw::repo_source,
+    provider  => 'git',
+    user      => 'root',
+    revision  => 'master',
+    require   => [Package['git'],File[$role_ccw::repo_dir]]
+  }
+
+  file { $traefik_toml_file :
+    ensure   => file,
+    content  => template('role_ccw/traefik.toml.erb'),
+    require  => File['/opt/traefik'],
+    notify   => Exec['Restart containers on change'],
+  }
+
+  file { $traefik_acme_json :
+    ensure   => present,
+    mode     => '0600',
+    require  => File['/opt/traefik'],
+    notify   => Exec['Restart containers on change'],
+  }
+
+
+  docker_compose { "${role_ccw::repo_dir}/docker-compose.yml":
+    ensure      => present,
+    require     => [
+      Vcsrepo[$role_ccw::repo_dir],
+      File["${role_ccw::repo_dir}/.env"],
+      File['/data/ccw/initdb/1_init_db.sql'],
+      Docker_network['web'],
+    ]
+  }
+
+  exec { 'Pull containers' :
+    command  => 'docker-compose pull',
+    schedule => 'everyday',
+  }
+
+  exec { 'Up the containers to resolve updates' :
+    command  => 'docker-compose up -d',
+    schedule => 'everyday',
+    require  => Exec['Pull containers']
+  }
+
+  exec {'Restart containers on change':
+    refreshonly => true,
+    command     => 'docker-compose up -d',
+    require     => Docker_compose["${role_ccw::repo_dir}/docker-compose.yml"]
+  }
+
+  # deze gaat per dag 1 keer checken
+  # je kan ook een range aan geven, bv tussen 7 en 9 's ochtends
+  schedule { 'everyday':
+     period  => daily,
+     repeat  => 1,
+     range => '5-7',
   }
 
 }

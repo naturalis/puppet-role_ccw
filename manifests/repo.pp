@@ -8,14 +8,6 @@
 class role_ccw::repo ()
 {
 
-# ensure git package for repo checkouts
-  package { 'git':
-    ensure => installed,
-  }
-
-# set local variable for template sshconfig.erb
-$repokeyname = $role_ccw::repokeyname
-
 # Create /root/.ssh directory
   file { '/root/.ssh':
     ensure    => directory,
@@ -50,6 +42,7 @@ $repokeyname = $role_ccw::repokeyname
   file{ '/root/.ssh/known_hosts':
     mode      => '0600',
   }->
+
 # checkout using vcsrepo
   vcsrepo { $role_ccw::docroot:
     ensure    => $role_ccw::repoversion,
@@ -60,16 +53,5 @@ $repokeyname = $role_ccw::repokeyname
     require   => Package['git']
   }
 
-# remove admin directory when staging is false
-  if ($role_ccw::stagingserver == false){
-    file {'remove admin directory':
-        ensure  => absent,
-        path    => "${role_ccw::docroot}/admin",
-        recurse => true,
-        purge   => true,
-        force   => true,
-        require => Vcsrepo[$role_ccw::docroot]
-    }
-  }
 }
 
