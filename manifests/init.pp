@@ -62,7 +62,7 @@ class role_ccw (
 
   file { '/data/ccw/initdb/1_init_db.sql':
     ensure   => file,
-    mode     => '0600',
+    mode     => '0644',
     content  => template('role_ccw/1_init_db.erb'),
     require  => File['/data/ccw/initdb'],
   }
