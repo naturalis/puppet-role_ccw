@@ -67,6 +67,13 @@ class role_ccw (
     require  => File['/data/ccw/initdb'],
   }
 
+  file { '/data/ccw/mysqlconf/my-ccw.cnf':
+    ensure   => file,
+    mode     => '0644',
+    source    => 'puppet:///modules/role_ccw/my-ccw.cnf',
+    require  => File['/data/ccw/mysqlconf'],
+  }
+
   include 'docker'
   include 'stdlib'
 
