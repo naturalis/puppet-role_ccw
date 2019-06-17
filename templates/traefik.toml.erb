@@ -11,24 +11,40 @@ defaultEntryPoints = ["http","https"]
   [entryPoints.https]
   address = ":443"
     [entryPoints.https.tls]
+      [[entryPoints.https.tls.certificates]]
+        certFile = "<%= @ssl_certfile %>"
+        keyFile = "<%= @ssl_certkey %>"
+
 [retry]
+
+
+[api]
+  # Name of the related entry point
+  #
+  # Optional
+  # Default: "traefik"
+  #
+  entryPoint = "traefik"
+
+  # Enable Dashboard
+  #
+  # Optional
+  # Default: true
+  #
+  dashboard = true
+
+  # Enable debug mode.
+  # This will install HTTP handlers to expose Go expvars under /debug/vars and
+  # pprof profiling data under /debug/pprof/.
+  # Additionally, the log level will be set to DEBUG.
+  #
+  # Optional
+  # Default: false
+  #
+  debug = true
 
 [docker]
 endpoint = "unix:///var/run/docker.sock"
-domain = "<%= scope['role_ccw::ccw_url'] %>"
+domain = "naturalis.nl"
 watch = true
 exposedbydefault = false
-
-[acme]
-email = "aut@naturalis.nl"
-storage = "acme.json"
-entryPoint = "https"
-onHostRule = true
-onDemand = false
-
-[[acme.domains]]
-  main = "<%= scope['role_ccw::ccw_url'] %>"
-  sans = ["<%= scope['role_ccw::minio_url'] %>"]
-
-[acme.httpChallenge]
-entryPoint = "http"

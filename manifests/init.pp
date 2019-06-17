@@ -30,6 +30,12 @@ class role_ccw (
   $docroot                    = '/data/ccw/www',
   $traefik_toml_file          = '/opt/traefik/traefik.toml',
   $traefik_acme_json          = '/opt/traefik/acme.json',
+  $ssl_certfile               = '/etc/letsencrypt/live/ccw.naturalis.nl/fullchain.pem',
+  $ssl_certkey                = '/etc/letsencrypt/live/ccw.naturalis.nl/privkey.pem',
+  $logrotate_hash             = { 'apache2'    => { 'log_path' => '/data/ccw/apachelog',
+                                                    'post_rotate' => "(cd ${repo_dir}; docker-compose exec ccw service apache2 reload)",
+                                                    'extraline' => 'su root docker'},
+                               },
 ){
 
 # Get code from repository
@@ -145,6 +151,12 @@ class role_ccw (
     schedule => 'everyday',
   }
 
+  exec { 'Cleanup docker unused resources' :
+    command  => '/usr/bin/docker system prune -a -f',
+    schedule => 'everyday',
+    require  => Exec['Pull containers']
+  }
+
   exec { 'Up the containers to resolve updates' :
     command  => 'docker-compose up -d',
     schedule => 'everyday',
@@ -164,5 +176,8 @@ class role_ccw (
      repeat  => 1,
      range => '5-7',
   }
+
+  create_resources('role_ccw::logrotate', $logrotate_hash)
+
 
 }
